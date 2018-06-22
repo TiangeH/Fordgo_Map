@@ -25,3 +25,38 @@ SanFran<-get_map(location = "San Francisco",source="google",maptype = "terrain",
 start_dots<-geom_point(aes(x = start_station_longitude, y = start_station_latitude), col = "orange", data = popular_station)
 end_dots<-geom_point(aes(x = end_station_longitude, y = end_station_latitude), col = "blue", data = popular_station)
 ggmap(SanFran)+start_dots+end_dots
+
+#to know the leaflet, visit https://rstudio.github.io/leaflet/
+ 
+#steps below, I used the method posted on StackFlow by Cmichael
+#https://stackoverflow.com/questions/44283774/flow-maptravel-path-using-lat-and-long-in-r
+
+pathList = NULL
+for(i in 1:nrow(popular_station))
+{
+  tmp = gcIntermediate(c(popular_station$start_station_longitude[i],
+                         popular_station$start_station_latitude[i]),
+                       c(popular_station$end_station_longitude[i],
+                         popular_station$end_station_latitude[i]),n = 40,
+                       addStartEnd=TRUE)
+  tmp = data.frame(tmp)
+  pathList = c(pathList,list(tmp))
+}
+
+leaflet() %>% addTiles() -> lf
+
+for (path in pathList)
+{
+  lf %>% addPolylines(data = path,
+                      lng = ~lon, 
+                      lat = ~lat) -> lf
+  
+}
+
+
+lf
+
+m <- leaflet() %>%
+  addTiles() %>%  # Add default OpenStreetMap map tiles
+  addMarkers(lng= -122.2488, lat= 37.79271, popup="Start_1")
+m
